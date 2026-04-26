@@ -1,0 +1,11 @@
+{
+  "name": "01_english_explicit",
+  "input": "I'll pay 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 50 mUSDC if the logo is delivered by April 28, 2026. Refund after May 1, 2026.",
+  "expect": {
+    "payee_address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "amount_decimal": "50",
+    "amount_wei": "50000000",
+    "evidence_required": true,
+    "warnings_should_be": "empty (all fields present)"
+  }
+}

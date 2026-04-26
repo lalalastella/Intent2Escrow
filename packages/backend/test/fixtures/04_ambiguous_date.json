@@ -1,0 +1,14 @@
+{
+  "name": "04_ambiguous_date",
+  "input": "Pay 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 30 mUSDC by next Friday for the website copy.",
+  "expect": {
+    "payee_address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "amount_decimal": "30",
+    "evidence_required": true,
+    "warnings_should_contain": [
+      "ambiguous date or default release_deadline applied"
+    ],
+    "fund_deadline": "resolved against today_iso (next Friday)",
+    "release_deadline": "may be defaulted to fund_deadline + 3 days with a warning"
+  }
+}

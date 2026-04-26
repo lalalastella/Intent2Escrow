@@ -1,0 +1,12 @@
+{
+  "name": "02_chinese",
+  "input": "我给 Bob (0x70997970C51812dc3A010C7d01b50e0d17dc79C8) 付 50 mUSDC，他在 2026 年 4 月 28 日前交付 logo 设计稿。5 月 1 日后我可以退款。",
+  "expect": {
+    "payee_address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "payee_hint": "Bob",
+    "amount_decimal": "50",
+    "evidence_required": true,
+    "description": "Chinese sentence summarizing the logo deal",
+    "warnings_should_be": "empty (parser should handle Chinese natively)"
+  }
+}

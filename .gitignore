@@ -1,7 +1,7 @@
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Node
 node_modules/
@@ -19,6 +19,7 @@ Thumbs.db
 contracts/out/
 contracts/cache/
 contracts/broadcast/
+contracts/lib/
 
 # Foundry dependencies (run 'forge install' to fetch)
 contracts/lib/
@@ -28,4 +29,21 @@ contracts/lib/
 *.bak
 *~
 *.swp
-.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+
+# Misc build/cache
+cache/
+out/
+
+# backups
+*.save
+*.bak
+*~
