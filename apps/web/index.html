@@ -441,7 +441,9 @@
 
       const warns = s.warnings || []
       $('warningsBox').classList.toggle('hidden', warns.length === 0)
-      $('warningsList').innerHTML = warns.map(w => `<li>${w}</li>`).join('')
+      const ul = $('warningsList')
+      ul.innerHTML = ''
+      warns.forEach(w => { const li = document.createElement('li'); li.textContent = w; ul.appendChild(li) })
 
       const ok = !!s.payee_address && !!account
       $('createFundBtn').disabled = !ok
