@@ -2,39 +2,73 @@
 
 > Turn natural-language deal terms into verifiable on-chain settlement.
 
-An AI-powered escrow dApp for the MSX Web3 Hackathon (April 2026). Users describe a deal in plain English; an LLM parses it into a structured spec; a Solidity contract on Base Sepolia holds funds until release conditions are met.
+An AI-powered escrow dApp built for the MSX Web3 Hackathon (April 2026). Describe a deal in plain English or Chinese — an LLM parses it into a validated spec — funds enter a Solidity contract on Base Sepolia and release only when conditions are met.
 
-## Status
+## Live contracts (Base Sepolia)
 
-🚧 In active development. See [Intent2Escrow_Master_Plan.md](./Intent2Escrow_Master_Plan.md) for the full plan.
+| Contract | Address |
+|----------|---------|
+| EscrowBook | [`0x4DE20B4eC770DadfD403383Eb819f202C1d1272d`](https://sepolia.basescan.org/address/0x4DE20B4eC770DadfD403383Eb819f202C1d1272d) |
+| MockUSDC | [`0x220BAc08b870EB6831F39c6E665FEfd156c5Bb38`](https://sepolia.basescan.org/address/0x220BAc08b870EB6831F39c6E665FEfd156c5Bb38) |
 
-**Day 1 (Apr 19) — ✅ Done:**
-- EscrowBook contract written with OpenZeppelin SafeERC20 + ReentrancyGuard
-- 7 Foundry unit tests passing
-- Deployed and source-verified on Base Sepolia
+## Architecture
 
-## Contract
+```mermaid
+flowchart LR
+  U[User\nplain English] --> F[Frontend\nvanilla HTML + viem]
+  F -->|POST /api/parse-deal| B[FastAPI backend\nOpenAI · Pydantic]
+  B -->|EscrowSpec + keccak256 digest| F
+  F -->|signed tx| C[EscrowBook\nBase Sepolia]
+  M[MockUSDC\n6 decimals] --> C
+  C --> S[(on-chain state\nsource of truth)]
+```
 
-- **EscrowBook**: [`0x4DE20B4eC770DadfD403383Eb819f202C1d1272d`](https://base-sepolia.blockscout.com/address/0x4DE20B4eC770DadfD403383Eb819f202C1d1272d)
-- **Network**: Base Sepolia (Chain ID 84532)
+```
+apps/web/index.html          — single-file frontend (viem, Tailwind CDN)
+packages/backend/            — FastAPI + OpenAI structured outputs
+contracts/src/EscrowBook.sol — Solidity escrow state machine
+```
 
-## Why Web3 is essential here
+**Security boundary:** the LLM never decides who the payer is. `msg.sender` is always the payer. Prompt-injection attempts are flagged in warnings; the strict JSON schema rejects unknown fields.
 
-Without on-chain escrow, this is a form builder. With it, two strangers can commit to a deal with enforceable terms, shared state, and no platform custody. The contract — not us — holds the money.
+## How to run
 
-## Architecture (planned)
+### Frontend
 
-- Next.js + wagmi + viem frontend
-- FastAPI backend for LLM parsing + IPFS pinning
-- Solidity `EscrowBook` contract on Base Sepolia
-- IPFS for deal metadata and evidence
+No build step needed — open `apps/web/index.html` directly in a browser (or serve with any static server). Requires MetaMask and the backend running on `:8000`.
 
-## Run contract tests
+### Backend
+
+```bash
+cd packages/backend
+echo "OPENAI_API_KEY=sk-..." > .env   # fill in your key
+pip install -r backend_requirements.txt
+uvicorn app.main:app --port 8000 --reload
+```
+
+### Contract tests
 
 ```bash
 cd contracts
 forge test -vv
 ```
+
+## How it works
+
+1. **Describe** — type a deal in natural language (English or Chinese)
+2. **Parse** — backend sends it to `gpt-4o-mini` with structured outputs; returns a validated `EscrowSpec` with deadlines, amount, payee address, and evidence requirements
+3. **Sign** — frontend calls `approve → createEscrow → fund` in three wallet transactions
+4. **Deliver** — payee submits an evidence string (URL, hash, etc.) on-chain
+5. **Settle** — payer releases funds, or reclaims after the refund deadline
+
+## Escrow state machine
+
+```
+Created → Funded → EvidenceSubmitted → Released
+                 └──────────────────→ Refunded (past releaseDeadline)
+```
+
+If `evidenceRequired = false`, the payer can release directly from `Funded`.
 
 ## License
 

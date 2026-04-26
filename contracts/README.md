@@ -1,66 +1,47 @@
-## Foundry
+# EscrowBook — Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Solidity contracts for Intent2Escrow, built with Foundry and OpenZeppelin.
 
-Foundry consists of:
+## Contracts
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+| Contract | Description |
+|----------|-------------|
+| `src/EscrowBook.sol` | Main escrow state machine. Holds ERC-20 funds until payer releases or refund deadline passes. |
+| `src/MockUSDC.sol` | Demo ERC-20 with 6 decimals and a public `mint()`. Testnet only. |
 
-## Documentation
+## Deployed (Base Sepolia)
 
-https://book.getfoundry.sh/
+| Contract | Address |
+|----------|---------|
+| EscrowBook | `0x4DE20B4eC770DadfD403383Eb819f202C1d1272d` |
+| MockUSDC | `0x220BAc08b870EB6831F39c6E665FEfd156c5Bb38` |
 
-## Usage
+## Run tests
 
-### Build
-
-```shell
-$ forge build
+```bash
+forge test -vv
 ```
 
-### Test
+7 tests covering happy paths, access control, deadline enforcement, and input validation.
 
-```shell
-$ forge test
+## Deploy
+
+Set env vars first (`BASE_SEPOLIA_RPC_URL`, `PRIVATE_KEY`, `BASESCAN_API_KEY`), then:
+
+```bash
+# Deploy MockUSDC (testnet faucet token)
+forge script script/DeployMockUSDC.s.sol:DeployMockUSDC \
+  --rpc-url $BASE_SEPOLIA_RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast --verify \
+  --etherscan-api-key $BASESCAN_API_KEY
 ```
 
-### Format
+## State machine
 
-```shell
-$ forge fmt
+```
+Created → Funded → EvidenceSubmitted → Released
+                └──────────────────→ Refunded (past releaseDeadline)
 ```
 
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+`evidenceRequired = false` allows direct `Funded → Released`.

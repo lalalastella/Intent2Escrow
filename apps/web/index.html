@@ -180,7 +180,7 @@
             class="w-full p-2 border border-slate-300 rounded text-sm mb-2"></textarea>
           <button id="submitEvidenceBtn"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm">
-            Submit evidence (hashed on-chain)
+            Submit evidence (stored on-chain)
           </button>
         </div>
 
@@ -361,6 +361,7 @@
       await renderWallet()
       // listen for account / chain changes
       window.ethereum.removeAllListeners?.('accountsChanged')
+      window.ethereum.removeAllListeners?.('chainChanged')
       window.ethereum.on('accountsChanged', async (newAccs) => {
         account = newAccs[0] ? getAddress(newAccs[0]) : null
         await renderWallet()
@@ -510,7 +511,7 @@
         // STEP 3: fund
         setStep(3, 'loading')
         const hash3 = await walletClient.writeContract({
-          account, address: ESCROW_BOOK, abi: ESCROW_ABI, functionName: 'fund', args: [dealId],
+          account, address: ESCROW_BOOK, abi: ESCROW_ABI, functionName: 'fund', args: [dealId], gas: 200000n,
         })
         setStep(3, 'loading', hash3)
         await publicClient.waitForTransactionReceipt({ hash: hash3 })
